@@ -1,0 +1,21 @@
+---
+- name: Attach volume
+  hosts: "{{ mountserver }}"
+  vars_files:
+    - mount-server-vars.yml
+
+  tasks:
+  - name: Attaching volume
+    os_server_volume:
+      state: present
+      server: "{{ mountserver }}"
+      volume: File_storage
+      device: /dev/sdb
+
+  - name: Mounting the volume
+    become: true
+    mount:
+      path: /tmp/vol
+      src: /dev/sdb
+      fstype: ext4
+      state: mounted

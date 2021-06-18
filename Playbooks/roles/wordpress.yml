@@ -1,0 +1,70 @@
+---
+- name: Setting up infrastructure for, and installing/configuring, Wordpress
+  remote_user: ubuntu
+  become: true
+  hosts: webservers
+  vars_files:
+    - ../vars-etc/wordpress-vars.yml
+  tasks:
+    - name: install php
+      package: name={{ php }} update_cache=yes state=latest
+
+    - name: install apache2
+      package: name={{ apache2 }} state=latest
+
+    - name: configure apache2
+      file:
+        path: "/var/www/html"
+        state: directory
+        owner: "ubuntu"
+        group: "ubuntu"
+        mode: '0775'
+
+    - name: Remove apache default index
+      file:
+        path: /var/www/html/index.html
+        state: absent
+
+    - name: install wordpress(download wordpress files)
+      get_url:
+        url: https://f003.backblazeb2.com/file/2dv517/acme_site.tar.gz
+        dest: /home/ubuntu
+        
+    - name: Unzip acme site
+      unarchive:
+        src: /home/ubuntu/acme_site.tar.gz
+        dest: /var/www/html
+        remote_src: yes
+        mode: '0775'
+
+    - name: Set dbname in wp-config.php
+      replace:
+        path: /var/www/html/wp-config.php
+        regexp: '\b(\w*db-name-replace\w*)\b'
+        replace: '{{ db_name }}'
+
+    - name: Set db user in wp-config
+      replace:
+        path:  /var/www/html/wp-config.php
+        regexp: '\b(\w*db-user-replace\w*)\b'
+        replace: '{{ db_user }}'
+    
+    - name: Set db user password in wp-config
+      replace:
+        path:  /var/www/html/wp-config.php
+        regexp: '\b(\w*db-pw-replace\w*)\b'
+        replace: '{{ db_password }}'
+    
+    - name: Set host ip in wp-config
+      replace:
+        path:  /var/www/html/wp-config.php
+        regexp: '\b(\w*db-host-replace\w*)\b'
+        replace: '{{hostvars.DB_master.ansible_host}}'
+
+
+    - name: reload apache2
+      systemd:
+        name: apache2
+        state: reloaded
+
+

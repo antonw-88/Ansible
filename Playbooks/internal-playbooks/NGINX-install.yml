@@ -1,0 +1,66 @@
+---
+- hosts: nginx
+  become: yes
+  collections:
+    - nginxinc.nginx_core
+  roles:
+    - role: nginx
+    - role: nginx_config
+      vars:
+        nginx_config_http_template_enable: true
+        nginx_config_http_template:
+          app:
+            template_file: http/default.conf.j2
+            conf_file_name: default.conf
+            conf_file_location: /etc/nginx/conf.d/
+            servers:
+              loadbalancer:
+                listen:
+                  listen_localhost:
+                    port: 80
+                server_name: localhost
+                access_log:
+                  - name: main
+                    location: /var/log/nginx/access.log
+                reverse_proxy:
+                  locations:
+                    main:
+                      location: /
+                      proxy_pass: http://upstr/
+                      proxy_set_header:
+                        header_host:
+                          name: Host
+                          value: $host
+              server_one:
+                listen:
+                  listen_server_one:
+                    port: 80
+                server_name: "{{ hostvars.Webserver1.ansible_host }}"
+
+              server_two:
+                listen:
+                  listen_server_two:
+                    port: 80
+                server_name: "{{ hostvars.Webserver2.ansible_host }}"
+
+              server_three:
+                listen:
+                  listen_server_three:
+                    port: 80
+                server_name: "{{ hostvars.Webserver3.ansible_host }}"
+
+            upstreams:
+              main:
+                name: upstr
+                lb_method: least_conn
+                servers:
+                  server_one:
+                    address: "{{ hostvars.Webserver1.ansible_host }}"
+                    port: 80
+                  server_two:
+                    address: "{{ hostvars.Webserver2.ansible_host }}"
+                    port: 80
+                  server_three:
+                    address: "{{ hostvars.Webserver3.ansible_host }}"
+                    port: 80
+                    

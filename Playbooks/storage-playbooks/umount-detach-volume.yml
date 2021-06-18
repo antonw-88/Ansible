@@ -1,0 +1,20 @@
+---
+- name: Detach volume
+  hosts: "{{ mountserver }}"
+  vars_files:
+    - mount-server-vars.yml  
+
+  tasks:
+    - name: umount volumei
+      become: true      
+      mount:
+        path: /tmp/vol
+        src: /dev/sdb
+        state: unmounted
+
+    - name: Detaching volume
+      os_server_volume:
+        server: "{{ mountserver }}"
+        volume: File_storage
+        state: absent
+

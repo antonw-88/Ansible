@@ -1,0 +1,15 @@
+#Php modules to install
+php: [ 'php', 'php-curl', 'php-mysql', 'php-gd', 'php-mbstring', 'php-xml', 'php-xmlrpc', 'php-soap', 'php-intl', 'php-zip' ]
+
+#Apache network configuration and install
+apache2: [ 'apache2', 'libapache2-mod-php', 'debhelper', 'lsb-release', 'libaprutil1-dev', 'libapr1-dev', 'libpcre3-dev', 'zlib1g-dev', 'libnghttp2-dev', 'libssl-dev',
+ 'perl', 'liblua5.2-dev', 'libxml2-dev', 'autotools-dev', 'gawk', 'dh-systemd' ]
+host: "localhost"
+config: "localhost.conf"
+apache_port: "80"
+
+#Mysql configuration
+db_name: acmedb
+db_user: wp
+db_password: acme_password
+

@@ -1,0 +1,51 @@
+---
+- name: Setting up ansible
+  hosts: Ansibleserver1
+  remote_user: ubuntu
+  become: true
+  vars_files:
+    - ../vars-etc/ansible-setup-vars.yml
+  tasks:
+    - name: Install packages1 for Ansible
+      package: name={{ ansible1 }} update_cache=yes state=latest
+
+    - name: Install packages2 for Ansible
+      package: name={{ ansible2 }} update_cache=yes state=latest
+
+    - name: Install packages3 for Ansible
+      package: name={{ ansible3 }} update_cache=yes state=latest
+
+    - name: Install ansible openstack.cloud
+      shell: ansible-galaxy collection install openstack.cloud
+
+    - name: Install openstacksdk
+      become: true
+      command: pip3 install openstacksdk
+
+    - name: Remove old inventory
+      file:
+        path: /home/ubuntu/Playbooks/vars-etc/inventory.yml
+        state: absent
+
+    - name: Extract project.tar.gz into /home/ubuntu
+      unarchive:
+        src: /home/ubuntu/project.tar.gz
+        dest: /home/ubuntu
+        remote_src: yes
+
+    - name: Create ~/.config
+      file:
+        path: /home/ubuntu/.config
+        state: directory
+
+    - name: Create ~/.config/openstack
+      file:
+        path: /home/ubuntu/.config/openstack
+        state: directory
+
+    - name: Copy clouds.yaml to ~/.config/openstack
+      copy:
+        src: /home/ubuntu/clouds.yaml
+        dest: /home/ubuntu/.config/openstack
+        remote_src: yes
+        
